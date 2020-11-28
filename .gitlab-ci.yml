@@ -1,26 +1,39 @@
 default:
-  image: smedbergm/advent2020:0.1.0
+  image: smedbergm/advent2020:0.1.1
+  timeout: 5m
+
+stages:
+  - build
+  - test
+  - challenge
+
+cache:
+  paths:
+    - advent/target/debug/deps
 
 build-job:
   stage: build
   script:
-    - echo "Hello, $GITLAB_USER_LOGIN!"
-    - pwd
-    - ls -al .
+    - pushd advent
+    - cargo build --bins
 
-test-job1:
+test-job:
   stage: test
   script:
-    - echo "This job tests something"
-    - export LOCAL_VARIABLE=foo
-    - echo The value of LOCAL_VARIABLE is $LOCAL_VARIABLE
+    - pushd advent
+    - cargo test
 
-test-job2:
-  stage: test
+challenge-job:
+  stage: challenge
+  only:
+    refs:
+      - master
+      - beta
+
   script:
-    - mkdir -p /opt/challenges
-    - pushd /opt/challenges
+    - pushd /opt
     - git clone https://gitlab+deploy-token-289310:${GITLAB_SECRET_TOKEN_289310}@gitlab.com/matthew.smedberg/advent-of-code-2020-secret.git
     - popd
-    - cat /opt/challenges/advent-of-code-2020-secret/day0/challenge
-
+    - pushd advent
+    - cargo build --release --bin day0
+    - cat /opt/advent-of-code-2020-secret/day0/challenge target/release/day0
