@@ -34,6 +34,4 @@ challenge-job:
     - pushd /opt
     - git clone https://gitlab+deploy-token-289310:${GITLAB_SECRET_TOKEN_289310}@gitlab.com/matthew.smedberg/advent-of-code-2020-secret.git
     - popd
-    - pushd advent
-    - cargo build --release --bin day0
-    - cat /opt/advent-of-code-2020-secret/day0/challenge | target/release/day0
+    - scripts/challenge.py
