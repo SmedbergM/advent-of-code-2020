@@ -36,4 +36,4 @@ challenge-job:
     - popd
     - pushd advent
     - cargo build --release --bin day0
-    - cat /opt/advent-of-code-2020-secret/day0/challenge target/release/day0
+    - cat /opt/advent-of-code-2020-secret/day0/challenge | target/release/day0
