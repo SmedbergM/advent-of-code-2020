@@ -4,12 +4,11 @@ use std::io::prelude::*;
 use std::collections::BTreeSet;
 
 fn decompose_2(summands: &BTreeSet<usize>, target: usize) -> Option<(usize, usize)> {
-    for s in summands {
-        let v = *s;
-        if v <= target {
+    for &s in summands {
+        if s <= target {
             let diff = target - s;
-            if v <= target && v != diff && summands.contains(&diff) {
-                return Some((v, diff))
+            if s != diff && summands.contains(&diff) {
+                return Some((s, diff))
             }
         }
     };
@@ -18,14 +17,14 @@ fn decompose_2(summands: &BTreeSet<usize>, target: usize) -> Option<(usize, usiz
 
 fn decompose_3(summands: &BTreeSet<usize>, target: usize) -> Option<(usize, usize, usize)> {
     let mut summands_copy: BTreeSet<usize> = summands.clone();
-    for s in summands {
-        if *s <= target {
-            summands_copy.remove(s);
+    for &s in summands {
+        if s <= target {
+            summands_copy.remove(&s);
             if let Some((s0, s1)) = decompose_2(&summands_copy, target - s) {
-                return Some((*s, s0, s1))
+                return Some((s, s0, s1))
             }
+            summands_copy.insert(s);
         }
-        summands_copy.insert(*s);
     };
     return None
 }
