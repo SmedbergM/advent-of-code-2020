@@ -19,18 +19,13 @@ impl Password {
         lazy_static! {
             static ref PAT: Regex = Regex::new(r"(\d+)-(\d+) (\w): (\w+)").unwrap();
         }
-        PAT.captures(line).and_then(|c| {
-            c.get(1).and_then(|m1| {
-            c.get(2).and_then(|m2| {
-            c.get(3).and_then(|m3| {
-            c.get(4).and_then(|m4| {
-                usize::from_str_radix(m1.as_str(), 10).ok().and_then(|idx0| {
-                usize::from_str_radix(m2.as_str(), 10).ok().and_then(|idx1| {
-                m3.as_str().chars().next().map(|c| {
-                    let word = m4.as_str().to_owned();
-                    Password { idx0, idx1, c, word}
-                }) }) })
-            }) }) }) })
+        PAT.captures(line).and_then(|caps| {
+            usize::from_str_radix(&caps[1], 10).ok().and_then(|idx0| {
+            usize::from_str_radix(&caps[2], 10).ok().and_then(|idx1| {
+            caps[3].chars().next().map(|c| {
+                let word = caps[4].to_owned();
+                Password { idx0, idx1, c, word }
+            }) }) })
         })
     }
 
