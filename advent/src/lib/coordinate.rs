@@ -36,7 +36,7 @@ impl XY {
 }
 
 #[cfg(test)]
-mod tests {
+mod coordinate_spec {
     use super::*;
 
     #[test]
