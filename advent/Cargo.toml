@@ -13,3 +13,6 @@ path = "src/lib/coordinate.rs"
 [dependencies]
 regex = "1"
 lazy_static = "1.4"
+
+[profile.release]
+lto = true

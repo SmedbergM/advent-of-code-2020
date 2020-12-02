@@ -46,7 +46,7 @@ def main(args):
     for path in git_diff.stdout.split('\n'):
         day = extract_day(path)
         if day:
-            print("Running solver for {}".format(day))
+            print("Running solver for {}".format(day), flush=True)
             build_solver(day)
             solve_challenge(day, args)
 
