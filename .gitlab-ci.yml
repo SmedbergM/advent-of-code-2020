@@ -29,6 +29,11 @@ challenge-job:
     refs:
       - master
       - beta
+  
+  cache:
+    key: release
+    paths:
+      - advent/target/release/deps
 
   script:
     - pushd /opt
