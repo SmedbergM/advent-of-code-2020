@@ -213,7 +213,7 @@ fn main() {
 }
 
 #[cfg(test)]
-mod puzzle_builder_spec {
+mod day_0_spec {
 
     mod add {
         use super::super::*;

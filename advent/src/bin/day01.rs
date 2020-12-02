@@ -43,7 +43,7 @@ fn main() {
 }
 
 #[cfg(test)]
-mod decompose {
+mod day_01_spec {
     use super::*;
 
     #[test]
