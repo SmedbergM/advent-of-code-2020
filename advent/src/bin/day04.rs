@@ -93,18 +93,18 @@ impl<J: Iterator<Item=String>> Iterator for MapStream<J> {
 
         let mut p = BTreeMap::new();
 
-        while let Some(line) = self.lines.next() {
-            if line.is_empty() {
-                break;
-            } else {
-                p.extend(extract_pairs(line))
+        loop {
+            match self.lines.next() {
+                Some(line) if line.is_empty() && !p.is_empty() => {
+                    return Some(p)
+                },
+                Some(line) => {
+                    p.extend(extract_pairs(line))
+                },
+                None => {
+                    return Some(p).filter(|m| !m.is_empty())
+                }
             }
-        }
-
-        if p.is_empty() {
-            None
-        } else {
-            Some(p)
         }
     }
 }
@@ -163,7 +163,11 @@ mod day04_spec {
         hcl:#ae17e1 iyr:2013\n\
         eyr:2024\n\
         ecl:brn pid:760753108 byr:1931\n\
-        hgt:179cm";
+        hgt:179cm\n\
+        \n\
+        \n\
+        hcl:#cfa07d eyr:2025 pid:166559648
+        iyr:2011 ecl:brn hgt:59in";
 
         let expected0: BTreeMap<String, String> = vec_to_map(vec!(
             ("iyr","2013"),
@@ -183,10 +187,19 @@ mod day04_spec {
             ("byr","1931"),
             ("hgt","179cm")
         ));
+        let expected2: BTreeMap<String, String> = vec_to_map(vec!(
+            ("hcl","#cfa07d"),
+            ("eyr","2025"),
+            ("pid","166559648"),
+            ("iyr","2011"),
+            ("ecl","brn"),
+            ("hgt","59in"),
+        ));
 
         let mut stream = MapStream { lines: input.lines().map(|s| s.to_owned()) };
         assert_eq!(stream.next(), Some(expected0));
         assert_eq!(stream.next(), Some(expected1));
+        assert_eq!(stream.next(), Some(expected2));
         assert_eq!(stream.next(), None);
     }
 
