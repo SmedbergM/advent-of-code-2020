@@ -82,15 +82,9 @@ impl<J: Iterator<Item=String>> Iterator for MapStream<J> {
     type Item = BTreeMap<String, String>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        fn extract_pairs(line: String) -> BTreeMap<String, String> {
-            lazy_static! {
-                static ref KV_PAT: Regex = Regex::new(r"(\w{3}):([\w#]+)").unwrap();
-            }
-            KV_PAT.captures_iter(&line).map(|cap| {
-                (cap[1].to_owned(), cap[2].to_owned())
-            }).collect()
+        lazy_static! {
+            static ref KV_PAT: Regex = Regex::new(r"(\w{3}):([\w#]+)").unwrap();
         }
-
         let mut p = BTreeMap::new();
 
         loop {
@@ -99,7 +93,9 @@ impl<J: Iterator<Item=String>> Iterator for MapStream<J> {
                     return Some(p)
                 },
                 Some(line) => {
-                    p.extend(extract_pairs(line))
+                    KV_PAT.captures_iter(&line).for_each(|cap| {
+                        p.insert(cap[1].to_owned(), cap[2].to_owned());
+                    });
                 },
                 None => {
                     return Some(p).filter(|m| !m.is_empty())
