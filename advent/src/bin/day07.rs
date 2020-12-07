@@ -18,8 +18,19 @@ impl Bag {
     }
 }
 
+struct BaggageRegulation {
+    must_contain: BTreeMap<Rc<Bag>, usize>,
+    is_contained_by: BTreeSet<Rc<Bag>>
+}
+
+impl BaggageRegulation {
+    fn new() -> BaggageRegulation {
+        BaggageRegulation { must_contain: BTreeMap::new(), is_contained_by: BTreeSet::new() }
+    }
+}
+
 struct BaggageRegulations { 
-    regulations: BTreeMap<Rc<Bag>, BaggageRegulation2>
+    regulations: BTreeMap<Rc<Bag>, BaggageRegulation>
 }
 
 impl BaggageRegulations {
@@ -40,14 +51,14 @@ impl BaggageRegulations {
             let child_refs: Vec<(Rc<Bag>, usize)> = CONTENTS_PAT.captures_iter(&caps0[3]).flat_map(|caps1| {
                 usize::from_str_radix(&caps1[1], 10).map(|n| {
                     let child_bag = Rc::new(Bag::new(&caps1[2], &caps1[3]));
-                    let child_regulation = self.regulations.entry(child_bag.clone()).or_insert(BaggageRegulation2::new());
+                    let child_regulation = self.regulations.entry(child_bag.clone()).or_insert(BaggageRegulation::new());
                     child_regulation.is_contained_by.insert(outer_bag_boxed.clone());
                     (child_bag, n)
                 })
             }).collect();
 
             // then add all children to outer_bag
-            let outer_regulation = self.regulations.entry(outer_bag_boxed).or_insert(BaggageRegulation2::new());
+            let outer_regulation = self.regulations.entry(outer_bag_boxed).or_insert(BaggageRegulation::new());
             for (child_bag, n) in child_refs {
                 outer_regulation.must_contain.insert(child_bag, n);
             }
@@ -105,18 +116,6 @@ impl BaggageRegulations {
     }
 }
 
-struct BaggageRegulation2 {
-    must_contain: BTreeMap<Rc<Bag>, usize>,
-    is_contained_by: BTreeSet<Rc<Bag>>
-}
-
-impl BaggageRegulation2 {
-    fn new() -> BaggageRegulation2 {
-        BaggageRegulation2 { must_contain: BTreeMap::new(), is_contained_by: BTreeSet::new() }
-    }
-}
-
-
 fn main() {
     let stdin = io::stdin();
     let baggage_regulations = BaggageRegulations::build(&mut stdin.lock().lines().flatten());
@@ -135,11 +134,11 @@ fn main() {
 mod day07_spec {
     use super::*;
 
-    fn get_regulation<'a>(regs: &'a BaggageRegulations, adj: &str, color: &str) -> Option<&'a BaggageRegulation2> {
+    fn get_regulation<'a>(regs: &'a BaggageRegulations, adj: &str, color: &str) -> Option<&'a BaggageRegulation> {
         regs.regulations.get(&Bag::new(adj, color))
     }
 
-    fn get_required_contents(outer: &BaggageRegulation2, adj: &str, color: &str) -> usize {
+    fn get_required_contents(outer: &BaggageRegulation, adj: &str, color: &str) -> usize {
         *outer.must_contain.get(&Bag::new(adj, color)).unwrap_or(&0)
     }
 
