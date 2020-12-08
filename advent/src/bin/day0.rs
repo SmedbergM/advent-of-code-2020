@@ -7,7 +7,7 @@ use std::collections::{BTreeSet, BTreeMap, VecDeque};
 
 use regex::Regex;
 
-use coordinate::XY;
+use advent::coordinate::XY;
 
 // For this toy day, a puzzle is a rectangular character array such that
 // * the perimeter is marked by | (north-south wall), - (east-west wall) and + (corner);
