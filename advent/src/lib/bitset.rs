@@ -1,4 +1,4 @@
-
+#[derive(Clone)]
 pub struct BitSet {
     n: usize,
     bytes: Vec<u8>
