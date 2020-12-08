@@ -65,6 +65,21 @@ mod bitset_spec {
     use super::*;
 
     #[test]
+    fn new_test() {
+        let bitset = BitSet::new(8);
+        assert_eq!(bitset.bytes.as_ref(), &[0]);
+
+        let bitset = BitSet::new(9);
+        assert_eq!(bitset.bytes.as_ref(), &[0, 0]);
+
+        let bitset = BitSet::new(24);
+        assert_eq!(bitset.bytes.as_ref(), &[0, 0, 0]);
+
+        let bitset = BitSet::new(25);
+        assert_eq!(bitset.bytes.as_ref(), &[0, 0, 0, 0]);
+    }
+
+    #[test]
     fn get_test() {
         let bitset = BitSet {
             n: 9,
