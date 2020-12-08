@@ -1,7 +1,9 @@
+use std::boxed::Box;
+
 #[derive(Clone)]
 pub struct BitSet {
     n: usize,
-    bytes: Vec<u8>
+    bytes: Box<[u8]>
 }
 
 fn bit_at(byte: u8, idx: usize) -> bool {
@@ -13,7 +15,7 @@ impl BitSet {
         let bytes = match (n / 8, n % 8) {
             (byte_len, 0) => vec![0; byte_len],
             (byte_len, _) => vec![0; byte_len + 1]
-        };
+        }.into_boxed_slice();
 
         BitSet { n, bytes }
     }
@@ -66,7 +68,7 @@ mod bitset_spec {
     fn get_test() {
         let bitset = BitSet {
             n: 9,
-            bytes: vec!(0x82, 0x80)
+            bytes: vec!(0x82, 0x80).into_boxed_slice()
         };
         assert_eq!(bitset.get(0), Some(true));
         assert_eq!(bitset.get(1), Some(false));
@@ -81,7 +83,7 @@ mod bitset_spec {
     fn set_test() {
         let mut bitset = BitSet {
             n: 12,
-            bytes: vec!(0x82, 0xef)
+            bytes: vec!(0x82, 0xef).into_boxed_slice()
         };
         assert_eq!(bitset.set(0), Some(true));
         assert_eq!(bitset.bytes[0], 0x82);
@@ -105,7 +107,7 @@ mod bitset_spec {
     fn unset_test() {
         let mut bitset = BitSet {
             n: 16,
-            bytes: vec!(0x82, 0xab)
+            bytes: vec!(0x82, 0xab).into_boxed_slice()
         };
 
         assert_eq!(bitset.unset(0), Some(true));
