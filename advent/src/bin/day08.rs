@@ -65,6 +65,11 @@ impl HandheldGameConsole {
             eprintln!("Attempt to access instruction out of bounds at {}!", self.instruction_ptr);
         }
     }
+
+    fn reset(&mut self) {
+        self.accumulator = 0;
+        self.instruction_ptr = 0;
+    }
 }
 
 fn find_infinite_loop(console: &mut HandheldGameConsole) {
@@ -76,7 +81,7 @@ fn find_infinite_loop(console: &mut HandheldGameConsole) {
 }
 
 // Returns the index of an instruction which must be changed from NOP to JMP or vice versa
-fn fix_infinite_loop(console: &mut HandheldGameConsole) -> Option<usize> {
+fn fix_infinite_loop(console: &mut HandheldGameConsole) -> Option<(usize, i32)> {
     let mut executed_instructions = BitSet::new(console.instructions.len());
 
     enum ExitStatus {
@@ -137,8 +142,7 @@ fn fix_infinite_loop(console: &mut HandheldGameConsole) -> Option<usize> {
                         console.step()
                     },
                     ExitStatus::Zero(acc) => {
-                        println!("Modified program exited successfully! Accumulator: {}", acc);
-                        return Some(console.instruction_ptr)
+                        return Some((console.instruction_ptr, acc))
                     }
                 }
             }
@@ -156,15 +160,17 @@ fn wrapping_add(lhs: usize, rhs: i32) -> usize {
 
 fn main() {
     let stdin = io::stdin();
-    let console = HandheldGameConsole::parse(&mut stdin.lock().lines().flatten());
-    let mut console_part1 = console.clone();
-    find_infinite_loop(&mut console_part1);
-    println!("Entering infinite loop: accumulator = {}", console_part1.accumulator);
+    let mut console = HandheldGameConsole::parse(&mut stdin.lock().lines().flatten());
+    find_infinite_loop(&mut console);
+    println!("Entering infinite loop: accumulator = {}", console.accumulator);
 
-    let mut console_part2 = console.clone();
-    match fix_infinite_loop(&mut console_part2) {
+    console.reset();
+    match fix_infinite_loop(&mut console) {
         None => println!("No fix found."),
-        Some(ptr) => println!("Fix found: corrupted instruction at {}", ptr)
+        Some((ptr, acc)) => println!(
+            "Fix found: corrupted instruction at {}.\n\
+             Output of fixed program: {}", ptr, acc
+        )
     }
 }
 
@@ -186,6 +192,38 @@ mod day08_spec {
         }
     }
 
+    mod handheld_game_console {
+        use super::*;
+
+        #[test]
+        fn parse_test() {
+            let input = "nop +0\n\
+            acc +1\n\
+            jmp +4\n\
+            acc +3\n\
+            jmp -3\n\
+            acc -99\n\
+            acc +1\n\
+            jmp -4\n\
+            acc +6\n";
+            
+            let console = HandheldGameConsole::parse(&mut input.lines().map(|s| s.to_owned()));
+            assert_eq!(console.accumulator, 0);
+            assert_eq!(console.instruction_ptr, 0);
+            assert_eq!(console.instructions, vec!(
+                Instruction::Nop(0),
+                Instruction::Acc(1),
+                Instruction::Jmp(4),
+                Instruction::Acc(3),
+                Instruction::Jmp(-3),
+                Instruction::Acc(-99),
+                Instruction::Acc(1),
+                Instruction::Jmp(-4),
+                Instruction::Acc(6)
+            ));
+        }
+    }
+
     #[test]
     fn find_infinite_loop_test() {
         let mut console = HandheldGameConsole {
@@ -196,7 +234,7 @@ mod day08_spec {
                 Instruction::Jmp(4),
                 Instruction::Acc(3),
                 Instruction::Jmp(-3),
-                Instruction::Acc(99),
+                Instruction::Acc(-99),
                 Instruction::Acc(1),
                 Instruction::Jmp(-4),
                 Instruction::Acc(6)
@@ -217,13 +255,13 @@ mod day08_spec {
                 Instruction::Jmp(4),
                 Instruction::Acc(3),
                 Instruction::Jmp(-3),
-                Instruction::Acc(99),
+                Instruction::Acc(-99),
                 Instruction::Acc(1),
                 Instruction::Jmp(-4),
                 Instruction::Acc(6)
             )
         };
 
-        assert_eq!(fix_infinite_loop(&mut console), Some(7));
+        assert_eq!(fix_infinite_loop(&mut console), Some((7,8)));
     }
 }
