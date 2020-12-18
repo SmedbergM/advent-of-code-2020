@@ -1,9 +1,20 @@
 use std::boxed::Box;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct BitSet {
     n: usize,
     bytes: Box<[u8]>
+}
+
+impl std::fmt::Display for BitSet {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut s = String::new();
+        for byte in self.bytes.iter() {
+            s.push_str(format!("{:08b}", byte).as_ref());
+        }
+
+        write!(f, "[n = {}] {}", self.n, &s[0..self.n])
+    }
 }
 
 fn bit_at(byte: u8, idx: usize) -> bool {
@@ -57,6 +68,20 @@ impl BitSet {
         } else {
             None
         }
+    }
+
+    pub fn len(&self) -> usize {
+        self.bytes.iter().fold(0, |acc, b| acc + b.count_ones() as usize)
+    }
+
+    /// Returns the minimum set index in this bitset
+    pub fn min(&self) -> Option<usize> {
+        for (byte_idx, &byte) in self.bytes.iter().enumerate() {
+            if byte > 0 {
+                return Some(8*byte_idx + byte.leading_zeros() as usize)
+            }
+        }
+        return None
     }
 }
 
@@ -138,5 +163,46 @@ mod bitset_spec {
         assert_eq!(bitset.bytes[1], 0x8b);
 
         assert_eq!(bitset.unset(17), None);
+    }
+
+    #[test]
+    fn len_test() {
+        let mut bitset = BitSet::new(24);
+        assert_eq!(bitset.len(), 0);
+
+        bitset.set(1);
+        bitset.set(3);
+        bitset.set(7);
+
+        assert_eq!(bitset.len(), 3);
+
+        bitset.set(22);
+        assert_eq!(bitset.len(), 4);
+
+        bitset.unset(1);
+        bitset.unset(3);
+        bitset.unset(7);
+        assert_eq!(bitset.len(), 1);
+    }
+
+    #[test]
+    fn min_test() {
+        let mut bitset = BitSet::new(15);
+        assert_eq!(bitset.min(), None);
+
+        bitset.set(0);
+        assert_eq!(bitset.min(), Some(0));
+
+        bitset.set(1);
+        assert_eq!(bitset.min(), Some(0));
+
+        bitset.unset(0);
+        assert_eq!(bitset.min(), Some(1));
+
+        bitset.set(13);
+        assert_eq!(bitset.min(), Some(1));
+
+        bitset.unset(1);
+        assert_eq!(bitset.min(), Some(13));
     }
 }
