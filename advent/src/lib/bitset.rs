@@ -58,6 +58,16 @@ impl BitSet {
             None
         }
     }
+
+    /// Returns the minimum set index in this bitset
+    pub fn min(&self) -> Option<usize> {
+        for (byte_idx, &byte) in self.bytes.iter().enumerate() {
+            if byte > 0 {
+                return Some(8*byte_idx + byte.leading_zeros() as usize)
+            }
+        }
+        return None
+    }
 }
 
 #[cfg(test)]
@@ -138,5 +148,26 @@ mod bitset_spec {
         assert_eq!(bitset.bytes[1], 0x8b);
 
         assert_eq!(bitset.unset(17), None);
+    }
+
+    #[test]
+    fn min_test() {
+        let mut bitset = BitSet::new(15);
+        assert_eq!(bitset.min(), None);
+
+        bitset.set(0);
+        assert_eq!(bitset.min(), Some(0));
+
+        bitset.set(1);
+        assert_eq!(bitset.min(), Some(0));
+
+        bitset.unset(0);
+        assert_eq!(bitset.min(), Some(1));
+
+        bitset.set(13);
+        assert_eq!(bitset.min(), Some(1));
+
+        bitset.unset(1);
+        assert_eq!(bitset.min(), Some(13));
     }
 }
