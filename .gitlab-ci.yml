@@ -1,9 +1,8 @@
 default:
-  image: smedbergm/advent2020:0.1.1
+  image: smedbergm/advent2020:0.1.2
   timeout: 15m
 
 stages:
-  - build
   - test
   - challenge
 
@@ -11,19 +10,13 @@ cache:
   paths:
     - advent/target/debug/deps
 
-build-job:
-  stage: build
-  script:
-    - pushd advent
-    - cargo build --bins
-
-test-job:
+unit-test:
   stage: test
   script:
     - pushd advent
     - cargo test
 
-challenge-job:
+run-challenges:
   stage: challenge
   only:
     refs:
